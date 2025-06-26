@@ -212,7 +212,9 @@ bool ImTui_ImplNcurses_NewFrame() {
 
     ImGui::GetIO().KeyCtrl = false;
     ImGui::GetIO().KeyShift = false;
-    
+    ImGui::GetIO().KeyAlt = false;
+    ImGui::GetIO().KeySuper = false;
+
     // Reset mouse wheel delta
     ImGui::GetIO().MouseWheel = 0.0f;
     ImGui::GetIO().MouseWheelH = 0.0f;
@@ -245,9 +247,23 @@ bool ImTui_ImplNcurses_NewFrame() {
                 } else if (mstate & BUTTON5_PRESSED) { // Scroll down
                     ImGui::GetIO().MouseWheel -= 1.0f;
                 }
-                ImGui::GetIO().KeyCtrl |= ((mstate & 0x0F000000) == 0x01000000);
+                ImGui::GetIO().KeyCtrl |= (event.bstate & BUTTON_CTRL) != 0;
+                ImGui::GetIO().KeyShift |= (event.bstate & BUTTON_SHIFT) != 0;
+                ImGui::GetIO().KeyAlt |= (event.bstate & BUTTON_ALT) != 0;
             }
         } else {
+            if (c == 27) {
+                int next_ch = wgetch(stdscr);
+                if (next_ch != ERR) {
+                    ImGui::GetIO().KeyAlt = true;
+                    c = next_ch;
+                }
+            }
+            if (c >= 1 && c <= 26) {
+                ImGui::GetIO().KeyCtrl = true;
+                c = 'a' + c - 1;
+            }
+
             input[0] = (c & 0x000000FF);
             input[1] = (c & 0x0000FF00) >> 8;
             //printf("c = %d, c0 = %d, c1 = %d xxx\n", c, input[0], input[1]);
@@ -290,13 +306,6 @@ bool ImTui_ImplNcurses_NewFrame() {
 
         hasInput = true;
     }
-
-    if (ImGui::GetIO().KeysDown[ImGui::GetIO().KeyMap[ImGuiKey_A]]) ImGui::GetIO().KeyCtrl = true;
-    if (ImGui::GetIO().KeysDown[ImGui::GetIO().KeyMap[ImGuiKey_C]]) ImGui::GetIO().KeyCtrl = true;
-    if (ImGui::GetIO().KeysDown[ImGui::GetIO().KeyMap[ImGuiKey_V]]) ImGui::GetIO().KeyCtrl = true;
-    if (ImGui::GetIO().KeysDown[ImGui::GetIO().KeyMap[ImGuiKey_X]]) ImGui::GetIO().KeyCtrl = true;
-    if (ImGui::GetIO().KeysDown[ImGui::GetIO().KeyMap[ImGuiKey_Y]]) ImGui::GetIO().KeyCtrl = true;
-    if (ImGui::GetIO().KeysDown[ImGui::GetIO().KeyMap[ImGuiKey_Z]]) ImGui::GetIO().KeyCtrl = true;
 
     ImGui::GetIO().MousePos.x = mx;
     ImGui::GetIO().MousePos.y = my;
