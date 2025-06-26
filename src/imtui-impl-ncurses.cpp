@@ -2,6 +2,7 @@
  *  \brief Enter description here.
  */
 
+#include "imgui/imgui.h"
 #include "imtui/imtui.h"
 #include "imtui/imtui-impl-ncurses.h"
 #include "imtui/imtui-impl-text.h"
@@ -259,7 +260,7 @@ bool ImTui_ImplNcurses_NewFrame() {
                     c = next_ch;
                 }
             }
-            if (c >= 1 && c <= 26) {
+            if (c >= 1 && c <= 26 && c != 9) {
                 ImGui::GetIO().KeyCtrl = true;
                 c = 'a' + c - 1;
             }
