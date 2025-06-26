@@ -9,6 +9,8 @@ int main() {
     ImGui::CreateContext();
 
     auto screen = ImTui_ImplNcurses_Init(true);
+    ImGui::GetStyle().ScrollbarSize = 1;
+    ImGui::GetStyle().GrabMinSize = 1.0f;
     ImTui_ImplText_Init();
 
     bool demo = true;
@@ -26,6 +28,7 @@ int main() {
         ImGui::Begin("Hello, world!");
         ImGui::Text("NFrames = %d", nframes++);
         ImGui::Text("Mouse Pos : x = %g, y = %g", ImGui::GetIO().MousePos.x, ImGui::GetIO().MousePos.y);
+        ImGui::Text("Mouse Wheel: %.2f", ImGui::GetIO().MouseWheel);
         ImGui::Text("Time per frame %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::Text("Float:");
         ImGui::SameLine();

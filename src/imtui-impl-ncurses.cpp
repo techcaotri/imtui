@@ -27,6 +27,14 @@
 #include <ncurses.h>
 #endif
 
+// Define mouse wheel button constants if not already defined
+#ifndef BUTTON4_PRESSED
+#define BUTTON4_PRESSED 0x08000000
+#endif
+#ifndef BUTTON5_PRESSED  
+#define BUTTON5_PRESSED 0x10000000
+#endif
+
 #include <array>
 #include <chrono>
 #include <map>
@@ -95,6 +103,8 @@ ImTui::TScreen * ImTui_ImplNcurses_Init(bool mouseSupport, float fps_active, flo
     if (g_screen == nullptr) {
         g_screen = new ImTui::TScreen();
     }
+    
+
 
     if (fps_idle < 0.0) {
         fps_idle = fps_active;
@@ -115,7 +125,19 @@ ImTui::TScreen * ImTui_ImplNcurses_Init(bool mouseSupport, float fps_active, flo
 
     if (mouseSupport) {
         mouseinterval(0);
-        mousemask(ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION, NULL);
+        // Enable all mouse events including wheel events
+        mmask_t mask = ALL_MOUSE_EVENTS | REPORT_MOUSE_POSITION;
+        #ifdef BUTTON4_PRESSED
+        mask |= BUTTON4_PRESSED | BUTTON4_RELEASED | BUTTON4_CLICKED;
+        #endif
+        #ifdef BUTTON5_PRESSED  
+        mask |= BUTTON5_PRESSED | BUTTON5_RELEASED | BUTTON5_CLICKED;
+        #endif
+        
+        mmask_t oldmask;
+        mousemask(mask, &oldmask);
+        
+        // Enable mouse tracking in terminal
         printf("\033[?1003h\n");
     }
 
@@ -190,6 +212,10 @@ bool ImTui_ImplNcurses_NewFrame() {
 
     ImGui::GetIO().KeyCtrl = false;
     ImGui::GetIO().KeyShift = false;
+    
+    // Reset mouse wheel delta
+    ImGui::GetIO().MouseWheel = 0.0f;
+    ImGui::GetIO().MouseWheelH = 0.0f;
 
     while (true) {
         int c = wgetch(stdscr);
@@ -206,11 +232,19 @@ bool ImTui_ImplNcurses_NewFrame() {
                 mx = event.x;
                 my = event.y;
                 mstate = event.bstate;
+                
+                // Handle mouse button clicks
                 if ((mstate & 0x000f) == 0x0002) lbut = 1;
                 if ((mstate & 0x000f) == 0x0001) lbut = 0;
                 if ((mstate & 0xf000) == 0x2000) rbut = 1;
                 if ((mstate & 0xf000) == 0x1000) rbut = 0;
-                //printf("mstate = 0x%016lx\n", mstate);
+                
+                // Handle mouse wheel scrolling
+                if (mstate & BUTTON4_PRESSED) { // Scroll up
+                    ImGui::GetIO().MouseWheel += 1.0f;
+                } else if (mstate & BUTTON5_PRESSED) { // Scroll down
+                    ImGui::GetIO().MouseWheel -= 1.0f;
+                }
                 ImGui::GetIO().KeyCtrl |= ((mstate & 0x0F000000) == 0x01000000);
             }
         } else {
