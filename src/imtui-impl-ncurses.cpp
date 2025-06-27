@@ -260,7 +260,7 @@ bool ImTui_ImplNcurses_NewFrame() {
                     c = next_ch;
                 }
             }
-            if (c >= 1 && c <= 26 && c != 9) {
+            if (c >= 1 && c <= 26 && c != 9 && c != 10 && c != 13) {
                 ImGui::GetIO().KeyCtrl = true;
                 c = 'a' + c - 1;
             }
