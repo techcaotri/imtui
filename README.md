@@ -1,9 +1,9 @@
 imtui
 =====
 ## Current supported fixes:
-+ Right & Middle mouse click events
-+ Mouse wheel scrolling events
-+ Mod Keys (Ctrl, Alt, Shift) events
++ Support Right & Middle mouse click events
++ Support Mouse wheel scrolling events
++ Support Mod Keys (Ctrl, Alt, Shift) events
 
 ## Original README:
 [![Actions Status](https://github.com/ggerganov/imtui/workflows/CI/badge.svg)](https://github.com/ggerganov/imtui/actions)
