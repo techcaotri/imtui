@@ -203,6 +203,7 @@ bool ImTui_ImplNcurses_NewFrame() {
     static int my = 0;
     static int lbut = 0;
     static int rbut = 0;
+    static int mbut = 0;
     static unsigned long mstate = 0;
     static char input[3];
 
@@ -227,6 +228,7 @@ bool ImTui_ImplNcurses_NewFrame() {
             if ((mstate & 0xf) == 0x1) {
                 lbut = 0;
                 rbut = 0;
+                mbut = 0;
             }
             break;
         } else if (c == KEY_MOUSE) {
@@ -237,10 +239,17 @@ bool ImTui_ImplNcurses_NewFrame() {
                 mstate = event.bstate;
                 
                 // Handle mouse button clicks
-                if ((mstate & 0x000f) == 0x0002) lbut = 1;
-                if ((mstate & 0x000f) == 0x0001) lbut = 0;
-                if ((mstate & 0xf000) == 0x2000) rbut = 1;
-                if ((mstate & 0xf000) == 0x1000) rbut = 0;
+                // Left button (button 1)
+                if (mstate & BUTTON1_PRESSED) lbut = 1;
+                if (mstate & BUTTON1_RELEASED) lbut = 0;
+                
+                // Middle button (button 2)
+                if (mstate & BUTTON2_PRESSED) mbut = 1;
+                if (mstate & BUTTON2_RELEASED) mbut = 0;
+                
+                // Right button (button 3)
+                if (mstate & BUTTON3_PRESSED) rbut = 1;
+                if (mstate & BUTTON3_RELEASED) rbut = 0;
                 
                 // Handle mouse wheel scrolling
                 if (mstate & BUTTON4_PRESSED) { // Scroll up
@@ -310,8 +319,9 @@ bool ImTui_ImplNcurses_NewFrame() {
 
     ImGui::GetIO().MousePos.x = mx;
     ImGui::GetIO().MousePos.y = my;
-    ImGui::GetIO().MouseDown[0] = lbut;
-    ImGui::GetIO().MouseDown[1] = rbut;
+    ImGui::GetIO().MouseDown[0] = lbut;  // Left button
+    ImGui::GetIO().MouseDown[1] = rbut;  // Right button
+    ImGui::GetIO().MouseDown[2] = mbut;  // Middle button
 
     ImGui::GetIO().DeltaTime = g_vsync.delta_s();
 
